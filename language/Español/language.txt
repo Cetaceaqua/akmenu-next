@@ -388,6 +388,8 @@ inimissing = ndsbs.ini no se encuentra en _nds/akmenunext o está dañado. Resta
 phatCol = DS Phat Colors
 loader = Cargador de juego
 carddma = Card Read DMA
+guilanguage = Idioma de superposición
+forcerewriteini = Forzar reescritura de configuración
 
 [resethotkey]
 text = Botones del menú
@@ -410,5 +412,39 @@ text = Anulación de idioma
 6 = Español
 7 = 中文
 8 = Korean
+
+[gui language]
+auto = Automático
+ar = Árabe
+ca = Catalán
+cs = Checo
+da = Danés
+de = Alemán
+el = Griego
+en = Inglés
+es = Español
+fi = Finlandés
+fr = Francés
+he = Hebreo
+hu = Húngaro
+id = Indonesio
+it = Italiano
+ja = Japonés
+ko = Coreano
+nl = Holandés
+no = Noruego
+pl = Polaco
+pt = Portugués
+pt-BR = Portugués (Brasil)
+ro = Rumano
+ru = Ruso
+ry = Rusino
+sv = Sueco
+tr = Turco
+uk = Ucraniano
+val = Valenciano
+vi = Vietnamita
+zh-CN = Chino (Simplificado)
+zh-TW = Chino (Tradicional)
 
 [end]

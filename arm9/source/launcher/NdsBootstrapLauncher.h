@@ -7,9 +7,20 @@
 #pragma once
 
 #include <nds/ndstypes.h>
+#include <string>
 
 #include "../dsrom.h"
 #include "ILauncher.h"
+
+struct BootstrapGuiLanguage {
+    const char* code;
+    const char* defaultName;
+};
+
+extern const BootstrapGuiLanguage kBootstrapGuiLanguages[31];
+extern const size_t kBootstrapGuiLanguageCount;
+
+std::string resolveBootstrapGuiLanguage(int selection);
 
 class NdsBootstrapLauncher : public ILauncher {
   public:

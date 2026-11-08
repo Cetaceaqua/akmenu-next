@@ -175,6 +175,8 @@ inimissing = ndsbs.ini is missing from _nds/akmenunext or is corrupt. Please res
 phatCol = DS Phat Colors
 loader = Game Loader
 carddma = Card Read DMA
+guilanguage = Overlay Language
+forcerewriteini = Force Rewrite Config
 
 
 [language]
@@ -375,5 +377,39 @@ text = Language Override
 6 = Español
 7 = 中文
 8 = Korean
+
+[gui language]
+auto = Auto
+ar = Arabic
+ca = Catalan
+cs = Czech
+da = Danish
+de = German
+el = Greek
+en = English
+es = Spanish
+fi = Finnish
+fr = French
+he = Hebrew
+hu = Hungarian
+id = Indonesian
+it = Italian
+ja = Japanese
+ko = Korean
+nl = Dutch
+no = Norwegian
+pl = Polish
+pt = Portuguese
+pt-BR = Portuguese (Brazil)
+ro = Romanian
+ru = Russian
+ry = Rusyn
+sv = Swedish
+tr = Turkish
+uk = Ukrainian
+val = Valencian
+vi = Vietnamese
+zh-CN = Chinese (Simplified)
+zh-TW = Chinese (Traditional)
 
 [end]

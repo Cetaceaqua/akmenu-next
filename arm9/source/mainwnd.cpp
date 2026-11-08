@@ -665,6 +665,8 @@ void cMainWnd::setParam(void) {
     size_t ndsBoostCpuItem;
     size_t ndsCardDmaItem;
     size_t ndsLanguageOverrideItem;
+    size_t ndsBootstrapGuiLanguageItem;
+    size_t ndsForceRewriteIniItem;
     size_t ndsPhatColorItem = (size_t)-1;
     size_t ndsDsiWareBooterItem = (size_t)-1;
     size_t ndsHomebrewLoaderItem = (size_t)-1;
@@ -711,6 +713,26 @@ void cMainWnd::setParam(void) {
     _values.push_back(LANG("override", "8"));
     ndsLanguageOverrideItem = ndsItem++;
     settingWnd.addSettingItem(LANG("override", "text"), _values, gs().languageOverride);
+
+    _values.clear();
+    _values.push_back(LANG("switches", "Auto"));
+    for (size_t i = 0; i < kBootstrapGuiLanguageCount; ++i) {
+        _values.push_back(lang().GetString("gui language", kBootstrapGuiLanguages[i].code,
+                                           kBootstrapGuiLanguages[i].defaultName));
+    }
+    ndsBootstrapGuiLanguageItem = ndsItem++;
+    settingWnd.addSettingItem(
+            LANG("nds bootstrap", "guilanguage"), _values,
+            (gs().guiLanguage >= 0 && (size_t)gs().guiLanguage <= kBootstrapGuiLanguageCount)
+                    ? gs().guiLanguage
+                    : 0);
+
+    _values.clear();
+    _values.push_back(LANG("switches", "Disable"));
+    _values.push_back(LANG("switches", "Enable"));
+    ndsForceRewriteIniItem = ndsItem++;
+    settingWnd.addSettingItem(LANG("nds bootstrap", "forcerewriteini"), _values,
+                              gs().forceRewriteBootstrapIni ? 1 : 0);
 
     if (isDSiMode()) {
         _values.clear();
@@ -825,6 +847,10 @@ void cMainWnd::setParam(void) {
     gs().cardReadDma = settingWnd.getItemSelection(TAB_NDS_BOOTSTRAP, ndsCardDmaItem);
     gs().languageOverride =
             settingWnd.getItemSelection(TAB_NDS_BOOTSTRAP, ndsLanguageOverrideItem);
+    gs().guiLanguage =
+            settingWnd.getItemSelection(TAB_NDS_BOOTSTRAP, ndsBootstrapGuiLanguageItem);
+    gs().forceRewriteBootstrapIni =
+            settingWnd.getItemSelection(TAB_NDS_BOOTSTRAP, ndsForceRewriteIniItem) != 0;
 
     if (fsManager().isFlashcart()) {
         gs().pico = settingWnd.getItemSelection(TAB_NDS_BOOTSTRAP, ndsLoaderItem);

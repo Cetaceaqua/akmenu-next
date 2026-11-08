@@ -381,6 +381,8 @@ inimissing = ndsbs.ini が _nds/akmenunext に存在しないか、破損して�
 phatCol = DSオリジナルカラー
 loader = ゲームローダー
 carddma = Card Read DMA
+guilanguage = オーバーレイ言語
+forcerewriteini = 設定ファイルの強制上書き
 
 [resethotkey]
 text = メニューホットキー
@@ -403,5 +405,39 @@ text = 言語のオーバーライド
 6 = Español
 7 = 中文
 8 = Korean
+
+[gui language]
+auto = 自動
+ar = アラビア語
+ca = カタルーニャ語
+cs = チェコ語
+da = デンマーク語
+de = ドイツ語
+el = ギリシャ語
+en = 英語
+es = スペイン語
+fi = フィンランド語
+fr = フランス語
+he = ヘブライ語
+hu = ハンガリー語
+id = インドネシア語
+it = イタリア語
+ja = 日本語
+ko = 韓国語
+nl = オランダ語
+no = ノルウェー語
+pl = ポーランド語
+pt = ポルトガル語
+pt-BR = ポルトガル語 (ブラジル)
+ro = ルーマニア語
+ru = ロシア語
+ry = ルシン語
+sv = スウェーデン語
+tr = トルコ語
+uk = ウクライナ語
+val = バレンシア語
+vi = ベトナム語
+zh-CN = 簡体字中国語
+zh-TW = 繁体字中国語
 
 [end]

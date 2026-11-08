@@ -28,6 +28,59 @@
 #include "../debugoverlay.h"
 #include "NdsBootstrapDonor.h"
 #include "NdsBootstrapLauncher.h"
+
+const BootstrapGuiLanguage kBootstrapGuiLanguages[31] = {
+    {"ar", "Arabic"},
+    {"ca", "Catalan"},
+    {"cs", "Czech"},
+    {"da", "Danish"},
+    {"de", "German"},
+    {"el", "Greek"},
+    {"en", "English"},
+    {"es", "Spanish"},
+    {"fi", "Finnish"},
+    {"fr", "French"},
+    {"he", "Hebrew"},
+    {"hu", "Hungarian"},
+    {"id", "Indonesian"},
+    {"it", "Italian"},
+    {"ja", "Japanese"},
+    {"ko", "Korean"},
+    {"nl", "Dutch"},
+    {"no", "Norwegian"},
+    {"pl", "Polish"},
+    {"pt", "Portuguese"},
+    {"pt-BR", "Portuguese (BR)"},
+    {"ro", "Romanian"},
+    {"ru", "Russian"},
+    {"ry", "Rusyn"},
+    {"sv", "Swedish"},
+    {"tr", "Turkish"},
+    {"uk", "Ukrainian"},
+    {"val", "Valencian"},
+    {"vi", "Vietnamese"},
+    {"zh-CN", "Chinese (CN)"},
+    {"zh-TW", "Chinese (TW)"}
+};
+const size_t kBootstrapGuiLanguageCount =
+        sizeof(kBootstrapGuiLanguages) / sizeof(kBootstrapGuiLanguages[0]);
+
+std::string resolveBootstrapGuiLanguage(int selection) {
+    if (selection > 0 && (size_t)selection <= kBootstrapGuiLanguageCount) {
+        return kBootstrapGuiLanguages[selection - 1].code;
+    }
+    const std::string& langDir = gs().langDirectory;
+    if (langDir == "简体中文 (CN)") return "zh-CN";
+    if (langDir == "繁體中文 (ZH)") return "zh-TW";
+    if (langDir == "日本語 (JP)") return "ja";
+    if (langDir == "English") return "en";
+    if (langDir == "Français") return "fr";
+    if (langDir == "Deutsch") return "de";
+    if (langDir == "Italiano") return "it";
+    if (langDir == "Español") return "es";
+    if (langDir == "Русский") return "ru";
+    return "en";
+}
 #include "nds_loader_arm9.h"
 #include "fsmngr.h"
 
@@ -339,6 +392,13 @@ bool NdsBootstrapLauncher::prepareIni(bool hb, const std::string& homebrewArg,
                                       bool homebrewLaunch) {
     CIniFile ini;
     hotkeyCheck = false;
+    const std::string bootstrapIniPath = mBootstrapRoot + "_nds/nds-bootstrap.ini";
+    const bool preserveExisting =
+            !gs().forceRewriteBootstrapIni && (access(bootstrapIniPath.c_str(), F_OK) == 0);
+
+    if (preserveExisting) {
+        ini.LoadIniFile(bootstrapIniPath);
+    }
 
     ini.SetString("NDS-BOOTSTRAP", "NDS_PATH", mRomPath);
     if (!homebrewArg.empty()) {
@@ -347,9 +407,10 @@ bool NdsBootstrapLauncher::prepareIni(bool hb, const std::string& homebrewArg,
 
     if(hb == true)
     {
-        const std::string bootstrapIniPath = mBootstrapRoot + "_nds/nds-bootstrap.ini";
         configureNdsBootstrapDonors(ini, false, false, bootstrapIniPath);
-        ini.SetString("NDS-BOOTSTRAP", "DSI_MODE", 0);
+        if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "DSI_MODE", "").empty()) {
+            ini.SetString("NDS-BOOTSTRAP", "DSI_MODE", 0);
+        }
         ini.SaveIniFile(bootstrapIniPath);
         debugOverlay::updateDonorStatus(ini, false);
         return true;
@@ -372,12 +433,24 @@ bool NdsBootstrapLauncher::prepareIni(bool hb, const std::string& homebrewArg,
         ini.SetString("NDS-BOOTSTRAP", "APP_PATH", romAlias);
         ini.SetString("NDS-BOOTSTRAP", "SAV_PATH", publicSaveAlias);
         ini.SetString("NDS-BOOTSTRAP", "PRV_PATH", privateSaveAlias);
-        ini.SetInt("NDS-BOOTSTRAP", "BOOST_CPU", 1);
-        ini.SetInt("NDS-BOOTSTRAP", "BOOST_VRAM", 1);
-        ini.SetInt("NDS-BOOTSTRAP", "DONOR_SDK_VER", 5);
-        ini.SetInt("NDS-BOOTSTRAP", "GAME_SOFT_RESET", 1);
-        ini.SetInt("NDS-BOOTSTRAP", "PATCH_MPU_REGION", 0);
-        ini.SetInt("NDS-BOOTSTRAP", "PATCH_MPU_SIZE", 0);
+        if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "BOOST_CPU", "").empty()) {
+            ini.SetInt("NDS-BOOTSTRAP", "BOOST_CPU", 1);
+        }
+        if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "BOOST_VRAM", "").empty()) {
+            ini.SetInt("NDS-BOOTSTRAP", "BOOST_VRAM", 1);
+        }
+        if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "DONOR_SDK_VER", "").empty()) {
+            ini.SetInt("NDS-BOOTSTRAP", "DONOR_SDK_VER", 5);
+        }
+        if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "GAME_SOFT_RESET", "").empty()) {
+            ini.SetInt("NDS-BOOTSTRAP", "GAME_SOFT_RESET", 1);
+        }
+        if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "PATCH_MPU_REGION", "").empty()) {
+            ini.SetInt("NDS-BOOTSTRAP", "PATCH_MPU_REGION", 0);
+        }
+        if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "PATCH_MPU_SIZE", "").empty()) {
+            ini.SetInt("NDS-BOOTSTRAP", "PATCH_MPU_SIZE", 0);
+        }
     } else {
         ini.SetString("NDS-BOOTSTRAP", "SAV_PATH", mSavePath);
     }
@@ -385,8 +458,9 @@ bool NdsBootstrapLauncher::prepareIni(bool hb, const std::string& homebrewArg,
     ini.SetString("NDS-BOOTSTRAP", "QUIT_PATH", fsManager().resolveSystemPath("/_nds/akmenunext/launcher.nds"));
 
     const bool consoleIs3DS = is3DS();
-    ini.SetString("NDS-BOOTSTRAP", "CONSOLE_MODEL", consoleIs3DS ? "2" : "0");
-    const std::string bootstrapIniPath = mBootstrapRoot + "_nds/nds-bootstrap.ini";
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "CONSOLE_MODEL", "").empty()) {
+        ini.SetString("NDS-BOOTSTRAP", "CONSOLE_MODEL", consoleIs3DS ? "2" : "0");
+    }
     configureNdsBootstrapDonors(ini, consoleIs3DS, !homebrewLaunch, bootstrapIniPath);
 
     std::string custIniPath = fsManager().resolveSystemPath("/_nds/akmenunext/ndsbs.ini");
@@ -421,87 +495,107 @@ bool NdsBootstrapLauncher::prepareIni(bool hb, const std::string& homebrewArg,
     5 = l-r-a-b-x-y : 200 100 1 2 400 800
     */
 
-    switch(gs().resetHotKey)
-    {
-        case 0:
-            ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "284");
-            break;
-        case 1:
-            ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "308");
-            break;
-        case 2:
-            ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "304");
-            break;
-        case 3:
-            ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "383");
-            break;
-        case 4:
-            ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "B82");
-            break;
-        case 5:
-            ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "F03");
-            break;
-        case 6:
-            if(hotkeyCheck){
-                ini.SetString("NDS-BOOTSTRAP", "HOTKEY", externalHotkey.c_str());
-            }
-            break;
-        default:
-            break;
-    }
-    switch(gs().languageOverride)
-    {
-        case 0:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "-1");
-            break;
-        case 1:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "0");
-            break;
-        case 2:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "1");
-            break;
-        case 3:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "2");
-            break;
-        case 4:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "3");
-            break;
-        case 5:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "4");
-            break;
-        case 6:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "5");
-            break;
-        case 7:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "6");
-            break;
-        case 8:
-            ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "7");
-            break;
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "HOTKEY", "").empty()) {
+        switch(gs().resetHotKey)
+        {
+            case 0:
+                ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "284");
+                break;
+            case 1:
+                ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "308");
+                break;
+            case 2:
+                ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "304");
+                break;
+            case 3:
+                ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "383");
+                break;
+            case 4:
+                ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "B82");
+                break;
+            case 5:
+                ini.SetString("NDS-BOOTSTRAP", "HOTKEY", "F03");
+                break;
+            case 6:
+                if(hotkeyCheck){
+                    ini.SetString("NDS-BOOTSTRAP", "HOTKEY", externalHotkey.c_str());
+                }
+                break;
+            default:
+                break;
+        }
     }
 
-    if (_romInfo.isDSiWare()) {
-        ini.SetInt("NDS-BOOTSTRAP", "DSI_MODE", 1);
-    } else if (_romInfo.saveInfo().isDsMode()) {
-        ini.SetString("NDS-BOOTSTRAP", "DSI_MODE", "0");
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "LANGUAGE", "").empty()) {
+        switch(gs().languageOverride)
+        {
+            case 0:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "-1");
+                break;
+            case 1:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "0");
+                break;
+            case 2:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "1");
+                break;
+            case 3:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "2");
+                break;
+            case 4:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "3");
+                break;
+            case 5:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "4");
+                break;
+            case 6:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "5");
+                break;
+            case 7:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "6");
+                break;
+            case 8:
+                ini.SetString("NDS-BOOTSTRAP", "LANGUAGE", "7");
+                break;
+        }
     }
 
-    if(_romInfo.saveInfo().isBoostCpu()) {
-        ini.SetString("NDS-BOOTSTRAP", "BOOST_CPU", "1");
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "GUI_LANGUAGE", "").empty()) {
+        std::string guiLang = resolveBootstrapGuiLanguage(gs().guiLanguage);
+        if (!guiLang.empty()) {
+            ini.SetString("NDS-BOOTSTRAP", "GUI_LANGUAGE", guiLang.c_str());
+        }
     }
 
-    u8 cardReadDmaSetting = _romInfo.saveInfo().getCardReadDma();
-    if (cardReadDmaSetting == 2) {
-        cardReadDmaSetting = gs().cardReadDma;
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "DSI_MODE", "").empty()) {
+        if (_romInfo.isDSiWare()) {
+            ini.SetInt("NDS-BOOTSTRAP", "DSI_MODE", 1);
+        } else if (_romInfo.saveInfo().isDsMode()) {
+            ini.SetString("NDS-BOOTSTRAP", "DSI_MODE", "0");
+        }
     }
-    if (cardReadDmaSetting == 1) {
-        ini.SetInt("NDS-BOOTSTRAP", "CARD_READ_DMA", 1);
-    } else if (cardReadDmaSetting == 2 || (cardReadDmaSetting == 0 && _romInfo.saveInfo().getCardReadDma() != 2)) {
-        ini.SetInt("NDS-BOOTSTRAP", "CARD_READ_DMA", 0);
+
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "BOOST_CPU", "").empty()) {
+        if(_romInfo.saveInfo().isBoostCpu()) {
+            ini.SetString("NDS-BOOTSTRAP", "BOOST_CPU", "1");
+        }
+    }
+
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "CARD_READ_DMA", "").empty()) {
+        u8 cardReadDmaSetting = _romInfo.saveInfo().getCardReadDma();
+        if (cardReadDmaSetting == 2) {
+            cardReadDmaSetting = gs().cardReadDma;
+        }
+        if (cardReadDmaSetting == 1) {
+            ini.SetInt("NDS-BOOTSTRAP", "CARD_READ_DMA", 1);
+        } else if (cardReadDmaSetting == 2 || (cardReadDmaSetting == 0 && _romInfo.saveInfo().getCardReadDma() != 2)) {
+            ini.SetInt("NDS-BOOTSTRAP", "CARD_READ_DMA", 0);
+        }
     }
     
-    if(gs().phatCol && isDSiMode()) {
-        ini.SetString("NDS-BOOTSTRAP", "PHAT_COLORS", "1");
+    if (!preserveExisting || ini.GetString("NDS-BOOTSTRAP", "PHAT_COLORS", "").empty()) {
+        if(gs().phatCol && isDSiMode()) {
+            ini.SetString("NDS-BOOTSTRAP", "PHAT_COLORS", "1");
+        }
     }
 
     if (access((mBootstrapRoot + "_nds/debug.txt").c_str(), F_OK) == 0) {
@@ -582,7 +676,7 @@ bool NdsBootstrapLauncher::launchRomInternal(std::string romPath, std::string sa
         progressWnd().setPercent(0);
         //Clean up old INI
         const std::string bootstrapIniPath = mBootstrapRoot + "_nds/nds-bootstrap.ini";
-        if (access(bootstrapIniPath.c_str(), F_OK) == 0) {
+        if (gs().forceRewriteBootstrapIni && access(bootstrapIniPath.c_str(), F_OK) == 0) {
             remove(bootstrapIniPath.c_str());
         }
         // Setup nds-bootstrap INI parameters
@@ -750,7 +844,7 @@ bool NdsBootstrapLauncher::launchRomInternal(std::string romPath, std::string sa
 
     //Clean up old INI
     const std::string bootstrapIniPath = mBootstrapRoot + "_nds/nds-bootstrap.ini";
-    if (access(bootstrapIniPath.c_str(), F_OK) == 0) {
+    if (gs().forceRewriteBootstrapIni && access(bootstrapIniPath.c_str(), F_OK) == 0) {
         remove(bootstrapIniPath.c_str());
     }
 

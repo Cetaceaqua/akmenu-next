@@ -175,6 +175,8 @@ inimissing = Le fichier ndsbs.ini est manquant dans _nds/akmenunext ou corrompu.
 phatCol = Couleur DS 2003
 loader = Chargeur de jeu
 carddma = Card Read DMA
+guilanguage = Langue du menu superposé
+forcerewriteini = Forcer la réécriture de la configuration
 
 [rom trim]
 text = Trimmer lors de la copie
@@ -403,5 +405,39 @@ text = Remplacement de la langue
 6 = Español
 7 = 中文
 8 = Korean
+
+[gui language]
+auto = Auto
+ar = Arabe
+ca = Catalan
+cs = Tchèque
+da = Danois
+de = Allemand
+el = Grec
+en = Anglais
+es = Espagnol
+fi = Finnois
+fr = Français
+he = Hébreu
+hu = Hongrois
+id = Indonésien
+it = Italien
+ja = Japonais
+ko = Coréen
+nl = Néerlandais
+no = Norvégien
+pl = Polonais
+pt = Portugais
+pt-BR = Portugais (Brésil)
+ro = Roumain
+ru = Russe
+ry = Ruthène
+sv = Suédois
+tr = Turc
+uk = Ukrainien
+val = Valencien
+vi = Vietnamien
+zh-CN = Chinois (Simplifié)
+zh-TW = Chinois (Traditionnel)
 
 [end]

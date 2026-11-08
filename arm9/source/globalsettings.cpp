@@ -53,6 +53,8 @@ cGlobalSettings::cGlobalSettings() {
     homebrewreset = false;
     resetHotKey = 0;
     phatCol = false;
+    guiLanguage = 0;
+    forceRewriteBootstrapIni = true;
     languageOverride = 0;
     hbStrap = 0;
     overridePluginDefaults = false;
@@ -98,6 +100,10 @@ void cGlobalSettings::loadSettings() {
     homebrewreset = ini.GetInt("system", "homebrewreset", homebrewreset);
     resetHotKey = ini.GetInt("system", "resethotkey", resetHotKey);
     phatCol = ini.GetInt("system", "phatCol", phatCol);
+    guiLanguage = ini.GetInt("system", "guiLanguage", guiLanguage);
+    if (guiLanguage < 0 || guiLanguage > 31) guiLanguage = 0;
+    forceRewriteBootstrapIni =
+            ini.GetInt("system", "forceRewriteBootstrapIni", forceRewriteBootstrapIni);
     languageOverride = ini.GetInt("system", "languageOverride", languageOverride);
     hbStrap = ini.GetInt("system", "hbstrap", hbStrap);
     if (hbStrap < 0 || hbStrap > 2) hbStrap = 0;
@@ -177,6 +183,8 @@ void cGlobalSettings::saveSettings() {
     ini.SetInt("system", "cardReadDma", cardReadDma);
     ini.SetInt("system", "fileSortMode", fileSortMode);
     ini.SetInt("system", "phatCol", phatCol);
+    ini.SetInt("system", "guiLanguage", guiLanguage);
+    ini.SetInt("system", "forceRewriteBootstrapIni", forceRewriteBootstrapIni);
     ini.SetInt("system", "autorunWithLastRom", autorunWithLastRom);
     ini.SetString(
         "system", "saveext",

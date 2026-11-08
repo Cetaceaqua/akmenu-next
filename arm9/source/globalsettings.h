@@ -82,6 +82,8 @@ class cGlobalSettings {
     bool boostCpu;
     bool ignoreCrc16;
     bool phatCol;
+    int guiLanguage;
+    bool forceRewriteBootstrapIni;
     // Homebrew loader: 0 = AKMenu-Next, 1 = nds-bootstrap-hb, 2 = Pico-Loader.
     int hbStrap;
     bool overridePluginDefaults;
